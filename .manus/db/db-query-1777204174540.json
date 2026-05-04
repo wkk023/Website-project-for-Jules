@@ -1,0 +1,34 @@
+{
+  "query": "SHOW TABLES",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 49VtwXzVtmDAU6g.root --database 4qJtjLqBrPUhVkBEH2gz3W --execute SHOW TABLES",
+  "rows": [
+    {
+      "Tables_in_4qJtjLqBrPUhVkBEH2gz3W": "__drizzle_migrations"
+    },
+    {
+      "Tables_in_4qJtjLqBrPUhVkBEH2gz3W": "buildings"
+    },
+    {
+      "Tables_in_4qJtjLqBrPUhVkBEH2gz3W": "fire_stations"
+    },
+    {
+      "Tables_in_4qJtjLqBrPUhVkBEH2gz3W": "inspection_records"
+    },
+    {
+      "Tables_in_4qJtjLqBrPUhVkBEH2gz3W": "referral_departments"
+    },
+    {
+      "Tables_in_4qJtjLqBrPUhVkBEH2gz3W": "risk_category_updates"
+    },
+    {
+      "Tables_in_4qJtjLqBrPUhVkBEH2gz3W": "users"
+    },
+    {
+      "Tables_in_4qJtjLqBrPUhVkBEH2gz3W": "verification_records"
+    }
+  ],
+  "messages": [],
+  "stdout": "Tables_in_4qJtjLqBrPUhVkBEH2gz3W\n__drizzle_migrations\nbuildings\nfire_stations\ninspection_records\nreferral_departments\nrisk_category_updates\nusers\nverification_records\n",
+  "stderr": "",
+  "execution_time_ms": 1636
+}

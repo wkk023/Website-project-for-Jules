@@ -1,0 +1,14 @@
+{
+  "query": "SELECT lifips_number, risk_category FROM buildings WHERE lifips_number = 'TS-120' LIMIT 1",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 49VtwXzVtmDAU6g.root --database 4qJtjLqBrPUhVkBEH2gz3W --execute SELECT lifips_number, risk_category FROM buildings WHERE lifips_number = 'TS-120' LIMIT 1",
+  "rows": [
+    {
+      "lifips_number": "TS-120",
+      "risk_category": "E"
+    }
+  ],
+  "messages": [],
+  "stdout": "lifips_number\trisk_category\nTS-120\tE\n",
+  "stderr": "",
+  "execution_time_ms": 1656
+}

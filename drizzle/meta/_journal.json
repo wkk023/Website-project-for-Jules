@@ -1,0 +1,20 @@
+{
+  "version": "7",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1777003467755,
+      "tag": "0000_lumpy_marten_broadcloak",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1777016292633,
+      "tag": "0001_supreme_devos",
+      "breakpoints": true
+    }
+  ]
+}
