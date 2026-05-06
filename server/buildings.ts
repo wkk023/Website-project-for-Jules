@@ -21,7 +21,7 @@ function loadBuildingsFromCSV(): Building[] {
     return buildingsCache;
   }
 
-  const csvPath = '/home/ubuntu/fire_inspection_system/server/buildings_new.csv';
+  const csvPath = path.join(process.cwd(), 'server', 'buildings_new.csv');
 
   if (!fs.existsSync(csvPath)) {
     console.warn('Buildings CSV file not found at:', csvPath);
