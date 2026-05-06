@@ -27,8 +27,6 @@ steps:
       - '600'
       - '--set-env-vars'
       - 'DATABASE_URL=${_DATABASE_URL},JWT_SECRET=${_JWT_SECRET},VITE_OAUTH_PORTAL_URL=${_VITE_OAUTH_PORTAL_URL},VITE_APP_ID=${_VITE_APP_ID},OWNER_OPENID=${_OWNER_OPENID}'
-      - '--add-cloudsql-instances'
-      - '${_CLOUD_SQL_CONNECTION_NAME}'
 
 images:
   - 'gcr.io/$PROJECT_ID/fire-inspection-system:$COMMIT_SHA'
