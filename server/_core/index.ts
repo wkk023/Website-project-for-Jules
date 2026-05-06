@@ -53,12 +53,9 @@ async function startServer() {
     serveStatic(app);
   }
 
-  const preferredPort = parseInt(process.env.PORT || "3000");
-  const port = await findAvailablePort(preferredPort);
-
-  if (port !== preferredPort) {
-    console.log(`Port ${preferredPort} is busy, using port ${port} instead`);
-  }
+  // In production (Cloud Run), we MUST listen on the exact port provided by process.env.PORT
+  // without searching for alternatives, as Cloud Run will fail health checks otherwise.
+  const port = parseInt(process.env.PORT || "3000");
 
   server.listen(port, "0.0.0.0", () => {
     console.log(`Server running on http://0.0.0.0:${port}/`);

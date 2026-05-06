@@ -41,5 +41,5 @@ ENV PORT=8080
 # Expose the port Cloud Run expects
 EXPOSE 8080
 
-# Start the application
-CMD ["pnpm", "start"]
+# Start the application using node directly for faster startup and better signal handling
+CMD ["node", "dist/index.js"]
