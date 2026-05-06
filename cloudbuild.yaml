@@ -26,7 +26,7 @@ steps:
       - '--timeout'
       - '600'
       - '--set-env-vars'
-      - 'DATABASE_URL=${_DATABASE_URL},JWT_SECRET=${_JWT_SECRET}'
+      - 'DATABASE_URL=${_DATABASE_URL},JWT_SECRET=${_JWT_SECRET},VITE_OAUTH_PORTAL_URL=${_VITE_OAUTH_PORTAL_URL},VITE_APP_ID=${_VITE_APP_ID},OWNER_OPENID=${_OWNER_OPENID}'
       - '--add-cloudsql-instances'
       - '${_CLOUD_SQL_CONNECTION_NAME}'
 
@@ -34,9 +34,12 @@ images:
   - 'gcr.io/$PROJECT_ID/fire-inspection-system:$COMMIT_SHA'
 
 substitutions:
-  _DATABASE_URL: 'REPLACE_IN_GCP_TRIGGER'
-  _JWT_SECRET: 'REPLACE_IN_GCP_TRIGGER'
-  _CLOUD_SQL_CONNECTION_NAME: 'REPLACE_IN_GCP_TRIGGER'
+  _DATABASE_URL: ''
+  _JWT_SECRET: 'default-secret'
+  _CLOUD_SQL_CONNECTION_NAME: ''
+  _VITE_OAUTH_PORTAL_URL: ''
+  _VITE_APP_ID: ''
+  _OWNER_OPENID: ''
 
 options:
   logging: CLOUD_LOGGING_ONLY
