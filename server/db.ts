@@ -1,4 +1,4 @@
-import { eq, and, like, gte, lte } from "drizzle-orm";
+import { eq, and, or, like, gte, lte } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   InsertUser,
@@ -411,9 +411,4 @@ export async function updateBuildingRiskCategory(buildingId: string, newRiskCate
     console.error("[Database] Failed to update building risk category:", error);
     return false;
   }
-}
-
-// Helper function for OR conditions
-function or(...conditions: any[]) {
-  return conditions.reduce((acc, cond) => acc || cond);
 }
