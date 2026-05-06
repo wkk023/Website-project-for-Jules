@@ -34,9 +34,9 @@ images:
   - 'gcr.io/$PROJECT_ID/fire-inspection-system:$COMMIT_SHA'
 
 substitutions:
-  _DATABASE_URL: ''
-  _JWT_SECRET: 'default-secret'
-  _CLOUD_SQL_CONNECTION_NAME: ''
+  _DATABASE_URL: 'REPLACE_IN_GCP_TRIGGER'
+  _JWT_SECRET: 'REPLACE_IN_GCP_TRIGGER'
+  _CLOUD_SQL_CONNECTION_NAME: 'REPLACE_IN_GCP_TRIGGER'
 
 options:
   logging: CLOUD_LOGGING_ONLY
