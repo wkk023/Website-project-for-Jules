@@ -24,12 +24,19 @@ import { ENV } from './_core/env';
 let _db: ReturnType<typeof drizzle> | null = null;
 
 // Lazily create the drizzle instance so local tooling can run without a DB.
-export async function getDb() {
-  if (!_db && process.env.DATABASE_URL) {
+// We use a simple singleton pattern. In production, make sure DATABASE_URL is set.
+export async function getDb(retryCount = 0) {
+  if (!_db) {
+    if (!process.env.DATABASE_URL) {
+      console.warn("[Database] DATABASE_URL is not set. Database operations will fail.");
+      return null;
+    }
+
     try {
       _db = drizzle(process.env.DATABASE_URL);
-    } catch (error) {
-      console.warn("[Database] Failed to connect:", error);
+      console.log("[Database] Drizzle instance initialized");
+    } catch (error: any) {
+      console.error("[Database] Failed to initialize Drizzle:", error?.message || error);
       _db = null;
     }
   }
