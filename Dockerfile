@@ -10,7 +10,6 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml ./
 
 # Copy patches if they exist
-COPY patches ./patches
 
 # Install all dependencies (including devDependencies for build)
 RUN pnpm install --no-frozen-lockfile
