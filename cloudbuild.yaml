@@ -23,6 +23,8 @@ steps:
       - '--allow-unauthenticated'
       - '--port'
       - '8080'
+      - '--timeout'
+      - '300'
 
 images:
   - 'gcr.io/$PROJECT_ID/fire-inspection-system:$COMMIT_SHA'
