@@ -13,7 +13,7 @@ COPY package.json pnpm-lock.yaml ./
 COPY patches ./patches
 
 # Install all dependencies (including devDependencies for build)
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --no-frozen-lockfile
 
 # Copy the rest of the source code
 COPY . .
@@ -33,7 +33,7 @@ COPY --from=builder /app/dist ./dist
 
 # Install only production dependencies
 RUN npm install -g pnpm@10.4.1 && \
-    pnpm install --prod --frozen-lockfile
+    pnpm install --prod --no-frozen-lockfile
 
 # Set environment to production
 ENV NODE_ENV=production
