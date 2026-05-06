@@ -26,13 +26,17 @@ steps:
       - '--timeout'
       - '300'
       - '--set-env-vars'
-      - 'DATABASE_URL=${_DATABASE_URL}'
+      - 'DATABASE_URL=${_DATABASE_URL},JWT_SECRET=${_JWT_SECRET}'
+      # If using Cloud SQL, add instances here:
+      # - '--add-cloudsql-instances'
+      # - '${_CLOUD_SQL_CONNECTION_NAME}'
 
 images:
   - 'gcr.io/$PROJECT_ID/fire-inspection-system:$COMMIT_SHA'
 
 substitutions:
   _DATABASE_URL: ''
+  _JWT_SECRET: 'default-secret-replace-me'
 
 options:
   logging: CLOUD_LOGGING_ONLY
