@@ -9,8 +9,6 @@ WORKDIR /app
 # Copy package files
 COPY package.json pnpm-lock.yaml ./
 
-# Copy patches if they exist
-
 # Install all dependencies (including devDependencies for build)
 RUN pnpm install --no-frozen-lockfile
 
@@ -31,9 +29,11 @@ COPY --from=builder /app/package.json /app/pnpm-lock.yaml ./
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/server/buildings_new.csv ./server/buildings_new.csv
 
-# Install only production dependencies
+# Install ONLY production dependencies
+# We also remove pnpm after install to keep the image slim
 RUN npm install -g pnpm@10.4.1 && \
-    pnpm install --prod --no-frozen-lockfile
+    pnpm install --prod --no-frozen-lockfile && \
+    npm uninstall -g pnpm
 
 # Set environment to production
 ENV NODE_ENV=production
@@ -42,5 +42,5 @@ ENV PORT=8080
 # Expose the port Cloud Run expects
 EXPOSE 8080
 
-# Start the application using node directly for faster startup and better signal handling
+# Start the application using node directly
 CMD ["node", "dist/index.js"]
