@@ -29,6 +29,7 @@ WORKDIR /app
 # Copy only necessary files for production
 COPY --from=builder /app/package.json /app/pnpm-lock.yaml ./
 COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/server/buildings_new.csv ./server/buildings_new.csv
 
 # Install only production dependencies
 RUN npm install -g pnpm@10.4.1 && \

@@ -1,9 +1,0 @@
-{
-  "query": "ALTER TABLE inspection_records MODIFY lifips_number VARCHAR(100) NULL, MODIFY address TEXT NULL, MODIFY location VARCHAR(255) NULL, MODIFY fsi_inspected TEXT NULL",
-  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway05.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 49VtwXzVtmDAU6g.root --database 4qJtjLqBrPUhVkBEH2gz3W --execute ALTER TABLE inspection_records MODIFY lifips_number VARCHAR(100) NULL, MODIFY address TEXT NULL, MODIFY location VARCHAR(255) NULL, MODIFY fsi_inspected TEXT NULL",
-  "rows": [],
-  "messages": [],
-  "stdout": "",
-  "stderr": "",
-  "execution_time_ms": 1771
-}

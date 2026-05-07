@@ -1,0 +1,153 @@
+
+ RUN  v2.1.9 /app
+
+ ❯ server/bulkImport.test.ts (9 tests | 7 failed) 28ms
+   × Bulk Import > validateRecord > should validate a correct record 9ms
+     → expected 'Invalid Inspection Date/Time: undefin…' to be null
+   × Bulk Import > validateRecord > should reject missing address 4ms
+     → expected 'Invalid Inspection Date/Time: undefin…' to be 'Missing Address' // Object.is equality
+   × Bulk Import > validateRecord > should reject invalid risk category 1ms
+     → expected 'Invalid Inspection Date/Time: undefin…' to contain 'Invalid Risk Category'
+   × Bulk Import > validateRecord > should accept all valid risk categories 1ms
+     → expected 'Invalid Inspection Date/Time: undefin…' to be null
+   × Bulk Import > processBulkImport > should process valid records successfully 2ms
+     → expected false to be true // Object.is equality
+   × Bulk Import > processBulkImport > should reject all records if any are invalid 1ms
+     → expected +0 to be 1 // Object.is equality
+   × Bulk Import > parseCSV > should parse CSV content correctly 6ms
+     → expected undefined to be 'E' // Object.is equality
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  server/bulkImport.test.ts > Bulk Import > validateRecord > should validate a correct record
+AssertionError: expected 'Invalid Inspection Date/Time: undefin…' to be null
+
+- Expected:
+null
+
++ Received:
+"Invalid Inspection Date/Time: undefined"
+
+ ❯ server/bulkImport.test.ts:14:38
+     12|         riskCategory: "E",
+     13|       };
+     14|       expect(validateRecord(record)).toBeNull();
+       |                                      ^
+     15|     });
+     16|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  server/bulkImport.test.ts > Bulk Import > validateRecord > should reject missing address
+AssertionError: expected 'Invalid Inspection Date/Time: undefin…' to be 'Missing Address' // Object.is equality
+
+Expected: "Missing Address"
+Received: "Invalid Inspection Date/Time: undefined"
+
+ ❯ server/bulkImport.test.ts:36:38
+     34|         riskCategory: "E",
+     35|       };
+     36|       expect(validateRecord(record)).toBe("Missing Address");
+       |                                      ^
+     37|     });
+     38|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  server/bulkImport.test.ts > Bulk Import > validateRecord > should reject invalid risk category
+AssertionError: expected 'Invalid Inspection Date/Time: undefin…' to contain 'Invalid Risk Category'
+
+Expected: "Invalid Risk Category"
+Received: "Invalid Inspection Date/Time: undefined"
+
+ ❯ server/bulkImport.test.ts:47:38
+     45|         riskCategory: "F",
+     46|       };
+     47|       expect(validateRecord(record)).toContain("Invalid Risk Category"…
+       |                                      ^
+     48|     });
+     49|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL  server/bulkImport.test.ts > Bulk Import > validateRecord > should accept all valid risk categories
+AssertionError: expected 'Invalid Inspection Date/Time: undefin…' to be null
+
+- Expected:
+null
+
++ Received:
+"Invalid Inspection Date/Time: undefined"
+
+ ❯ server/bulkImport.test.ts:60:40
+     58|           riskCategory: category,
+     59|         };
+     60|         expect(validateRecord(record)).toBeNull();
+       |                                        ^
+     61|       });
+     62|     });
+ ❯ server/bulkImport.test.ts:52:23
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+ FAIL  server/bulkImport.test.ts > Bulk Import > processBulkImport > should process valid records successfully
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ server/bulkImport.test.ts:85:30
+     83|
+     84|       const result = processBulkImport(records);
+     85|       expect(result.success).toBe(true);
+       |                              ^
+     86|       expect(result.totalRecords).toBe(2);
+     87|       expect(result.validRecords).toBe(2);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯
+
+ FAIL  server/bulkImport.test.ts > Bulk Import > processBulkImport > should reject all records if any are invalid
+AssertionError: expected +0 to be 1 // Object.is equality
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ server/bulkImport.test.ts:113:35
+    111|       expect(result.success).toBe(false);
+    112|       expect(result.totalRecords).toBe(2);
+    113|       expect(result.validRecords).toBe(1);
+       |                                   ^
+    114|       expect(result.records).toBeUndefined();
+    115|       expect(result.errors).toHaveLength(1);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯
+
+ FAIL  server/bulkImport.test.ts > Bulk Import > parseCSV > should parse CSV content correctly
+AssertionError: expected undefined to be 'E' // Object.is equality
+
+- Expected:
+"E"
+
++ Received:
+undefined
+
+ ❯ server/bulkImport.test.ts:145:39
+    143|       expect(records).toHaveLength(2);
+    144|       expect(records[0].buildingId).toBe("TS-1");
+    145|       expect(records[0].riskCategory).toBe("E");
+       |                                       ^
+    146|       expect(records[1].buildingId).toBe("TS-2");
+    147|       expect(records[1].riskCategory).toBe("A");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/7]⎯
+
+ Test Files  1 failed (1)
+      Tests  7 failed | 2 passed (9)
+   Start at  15:39:10
+   Duration  675ms (transform 71ms, setup 0ms, collect 339ms, tests 28ms, environment 0ms, prepare 82ms)

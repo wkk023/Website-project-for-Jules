@@ -33,8 +33,23 @@ export async function getDb(retryCount = 0) {
     }
 
     try {
-      _db = drizzle(process.env.DATABASE_URL);
-      console.log("[Database] Drizzle instance initialized");
+      // TiDB Cloud (Serverless) requires SSL.
+      // If DATABASE_URL doesn't include ssl parameters, we add them here.
+      const url = new URL(process.env.DATABASE_URL);
+      if (!url.searchParams.has("ssl")) {
+        // mysql2 driver uses "ssl" parameter. For TiDB, a simple object is enough.
+        _db = drizzle({
+          connection: {
+            uri: process.env.DATABASE_URL,
+            ssl: {
+              rejectUnauthorized: true,
+            }
+          }
+        });
+      } else {
+        _db = drizzle(process.env.DATABASE_URL);
+      }
+      console.log("[Database] Drizzle instance initialized with TiDB/SSL support");
     } catch (error: any) {
       console.error("[Database] Failed to initialize Drizzle:", error?.message || error);
       _db = null;
