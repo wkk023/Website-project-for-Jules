@@ -15,10 +15,10 @@ RUN pnpm install --no-frozen-lockfile
 COPY . .
 
 # Build frontend and server
-# package.json defines "build": "vite build --outDir dist/public && esbuild ..."
+# This generates dist/public/index.html and dist/index.js
 RUN pnpm run build
 
-# EXPLICIT VERIFICATION of build output in builder stage
+# Verify build output exists in builder stage with ABSOLUTE paths
 RUN ls -la /app/dist && ls -la /app/dist/public && [ -f /app/dist/public/index.html ]
 
 # Stage 2: Runtime stage
@@ -29,7 +29,8 @@ WORKDIR /app
 # Copy dependency files for production install
 COPY --from=builder /app/package.json /app/pnpm-lock.yaml ./
 
-# Copy the ENTIRE dist folder containing both the server bundle and the public assets
+# Copy the entire dist folder from the builder stage
+# This should include /app/dist/index.js AND /app/dist/public/
 COPY --from=builder /app/dist ./dist
 
 # Copy assets
@@ -40,8 +41,10 @@ RUN npm install -g pnpm@10.4.1 && \
     pnpm install --prod --no-frozen-lockfile && \
     npm uninstall -g pnpm
 
-# FINAL VERIFICATION in the runtime stage
-RUN ls -la /app/dist && ls -la /app/dist/public
+# FINAL VERIFICATION: Check the actual structure in the final image
+RUN ls -la /app/dist && \
+    ls -la /app/dist/public && \
+    [ -f /app/dist/public/index.html ]
 
 # Set environment
 ENV NODE_ENV=production
