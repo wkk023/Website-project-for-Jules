@@ -1,5 +1,4 @@
 node_modules
-dist
 .git
 .manus
 .webdev
@@ -10,7 +9,5 @@ yarn-error.log*
 .pnpm-debug.log*
 .env
 .env.*
-Dockerfile
 cloudbuild.yaml
 README.md
-Fire Inspection System - Progress Report.markdown
