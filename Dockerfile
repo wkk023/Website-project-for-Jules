@@ -1,27 +1,25 @@
-# Stage 1: Build stage
+# Stage 1: Builder
 FROM node:24-slim AS builder
 
 RUN npm install -g pnpm@10.4.1
 
 WORKDIR /app
 
-# Copy dependency files
+# Install dependencies
 COPY package.json pnpm-lock.yaml ./
-
-# Install ALL dependencies
 RUN pnpm install --no-frozen-lockfile
 
-# Copy source code
+# Copy all source
 COPY . .
 
-# Build frontend and server
-# This generates dist/public/index.html and dist/index.js
+# Build both frontend and backend
+# build script: "vite build --outDir dist/public && esbuild ..."
 RUN pnpm run build
 
-# Verify build output exists in builder stage with ABSOLUTE paths
+# Verification in Builder
 RUN ls -la /app/dist && ls -la /app/dist/public && [ -f /app/dist/public/index.html ]
 
-# Stage 2: Runtime stage
+# Stage 2: Runner
 FROM node:24-slim
 
 WORKDIR /app
@@ -29,28 +27,25 @@ WORKDIR /app
 # Copy dependency files for production install
 COPY --from=builder /app/package.json /app/pnpm-lock.yaml ./
 
-# Copy the entire dist folder from the builder stage
-# This should include /app/dist/index.js AND /app/dist/public/
+# Copy the ENTIRE dist folder relative to WORKDIR
+# This brings /app/dist/index.js and /app/dist/public/ into the final image
 COPY --from=builder /app/dist ./dist
 
-# Copy assets
+# Copy CSV assets
 COPY --from=builder /app/server/buildings_new.csv ./server/buildings_new.csv
 
-# Install ONLY production dependencies
+# Install production dependencies
 RUN npm install -g pnpm@10.4.1 && \
     pnpm install --prod --no-frozen-lockfile && \
     npm uninstall -g pnpm
 
-# FINAL VERIFICATION: Check the actual structure in the final image
-RUN ls -la /app/dist && \
-    ls -la /app/dist/public && \
-    [ -f /app/dist/public/index.html ]
+# FINAL IMAGE VERIFICATION
+RUN ls -la /app/dist && ls -la /app/dist/public && [ -f /app/dist/public/index.html ]
 
-# Set environment
 ENV NODE_ENV=production
 ENV PORT=8080
 
 EXPOSE 8080
 
-# Start server
+# The compiled server entry point
 CMD ["node", "dist/index.js"]
