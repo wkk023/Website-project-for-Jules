@@ -9,15 +9,15 @@ WORKDIR /app
 # Copy package files
 COPY package.json pnpm-lock.yaml ./
 
-# Install all dependencies (including devDependencies for build)
+# Install ALL dependencies (including devDependencies for build)
 RUN pnpm install --no-frozen-lockfile
 
 # Copy the rest of the source code
 COPY . .
 
 # Build the application
-# This runs 'vite build' and 'esbuild' for the server as defined in package.json
-RUN pnpm run build
+# This runs 'vite build --outDir dist/public' and 'esbuild server/_core/index.ts ... --outdir=dist'
+RUN pnpm run build && ls -R dist
 
 # Stage 2: Runtime stage
 FROM node:24-slim
@@ -26,11 +26,13 @@ WORKDIR /app
 
 # Copy only necessary files for production
 COPY --from=builder /app/package.json /app/pnpm-lock.yaml ./
+# Copy the entire dist folder which contains index.js AND the public subfolder
 COPY --from=builder /app/dist ./dist
+# Copy assets
 COPY --from=builder /app/server/buildings_new.csv ./server/buildings_new.csv
 
 # Install ONLY production dependencies
-# We also remove pnpm after install to keep the image slim
+# Since we moved vite plugins to dependencies, they will be installed here
 RUN npm install -g pnpm@10.4.1 && \
     pnpm install --prod --no-frozen-lockfile && \
     npm uninstall -g pnpm
