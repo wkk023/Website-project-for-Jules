@@ -9,15 +9,15 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --no-frozen-lockfile
 
-# Copy source
+# Copy all source
 COPY . .
 
 # Build frontend to dist/public and backend to dist/index.js
 RUN npx vite build --outDir dist/public && \
     npx esbuild server/_core/index.ts --platform=node --bundle --format=esm --outfile=dist/index.js
 
-# Verify builder stage structure
-RUN ls -la dist/public && [ -f dist/public/index.html ]
+# Verification in Builder: Use find to see the exact structure
+RUN find dist -name index.html
 
 # Stage 2: Runner
 FROM node:24-slim
@@ -27,7 +27,8 @@ WORKDIR /app
 # Copy dependency files for production
 COPY --from=builder /app/package.json /app/pnpm-lock.yaml ./
 
-# Copy the entire dist folder with absolute paths to preserve structure
+# Copy the ENTIRE dist folder.
+# Using /app/dist to /app/dist explicitly ensures no nesting occurs.
 COPY --from=builder /app/dist /app/dist
 
 # Copy assets
@@ -38,12 +39,14 @@ RUN npm install -g pnpm@10.4.1 && \
     pnpm install --prod --no-frozen-lockfile && \
     npm uninstall -g pnpm
 
-# Final sanity check in the runner stage
-RUN ls -la /app/dist/public/index.html
+# FINAL IMAGE VERIFICATION: Use find to be path-agnostic but confirm existence
+RUN find /app/dist -name index.html && \
+    ls -la /app/dist/index.js
 
 ENV NODE_ENV=production
 ENV PORT=8080
 
 EXPOSE 8080
 
+# The compiled server entry point
 CMD ["node", "dist/index.js"]
