@@ -12,12 +12,13 @@ RUN pnpm install --no-frozen-lockfile
 # Copy all source
 COPY . .
 
-# Build both frontend and backend
-# build script: "vite build --outDir dist/public && esbuild ..."
-RUN pnpm run build
+# Build both frontend and backend using the safer command
+RUN mkdir -p dist/public && \
+    npx vite build --outDir dist/public --emptyOutDir false && \
+    npx esbuild server/_core/index.ts --platform=node --packages=external --bundle --format=esm --outfile=dist/index.js
 
-# Verification in Builder
-RUN ls -la /app/dist && ls -la /app/dist/public && [ -f /app/dist/public/index.html ]
+# Explicitly check build output location
+RUN ls -R /app/dist
 
 # Stage 2: Runner
 FROM node:24-slim
@@ -28,10 +29,9 @@ WORKDIR /app
 COPY --from=builder /app/package.json /app/pnpm-lock.yaml ./
 
 # Copy the ENTIRE dist folder relative to WORKDIR
-# This brings /app/dist/index.js and /app/dist/public/ into the final image
 COPY --from=builder /app/dist ./dist
 
-# Copy CSV assets
+# Copy assets
 COPY --from=builder /app/server/buildings_new.csv ./server/buildings_new.csv
 
 # Install production dependencies
@@ -39,7 +39,7 @@ RUN npm install -g pnpm@10.4.1 && \
     pnpm install --prod --no-frozen-lockfile && \
     npm uninstall -g pnpm
 
-# FINAL IMAGE VERIFICATION
+# FINAL IMAGE VERIFICATION: Confirm the assets landed in the right spot
 RUN ls -la /app/dist && ls -la /app/dist/public && [ -f /app/dist/public/index.html ]
 
 ENV NODE_ENV=production
