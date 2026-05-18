@@ -3,16 +3,17 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import { createServer } from "http";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
-import { registerOAuthRoutes } from "./oauth";
-import { registerStorageProxy } from "./storageProxy";
-import { appRouter } from "../routers";
-import { createContext } from "./context";
-import { serveStatic } from "./serveStatic";
-import { getDb } from "../db";
+import { registerOAuthRoutes } from "./oauth.js";
+import { registerStorageProxy } from "./storageProxy.js";
+import { appRouter } from "../routers.js";
+import { createContext } from "./context.js";
+import { serveStatic } from "./serveStatic.js";
+import { getDb } from "../db.js";
 
 async function startServer() {
   const port = parseInt(process.env.PORT || "8080");
-  console.log(`[Startup] Initializing server on port ${port}...`);
+  const isDev = process.env.NODE_ENV === "development";
+  console.log(`[Startup] Mode: ${process.env.NODE_ENV}, Port: ${port}`);
 
   const app = express();
   const server = createServer(app);
@@ -32,30 +33,32 @@ async function startServer() {
     })
   );
 
-  if (process.env.NODE_ENV === "development") {
-    const viteModule = "./vite.js";
-    // @ts-ignore
-    const { setupVite } = await import(viteModule);
-    await setupVite(app, server);
+  if (isDev) {
+    // Dynamic import with full extension for ESM
+    try {
+      // @ts-ignore
+      const { setupVite } = await import("./vite.js");
+      await setupVite(app, server);
+    } catch (e) {
+      console.warn("[Vite] Failed to load development middleware:", e);
+    }
   } else {
     serveStatic(app);
   }
 
-  // Bind port BEFORE attempting DB connection to pass health checks
   server.listen(port, "0.0.0.0", () => {
-    console.log(`[Ready] Server is listening at http://0.0.0.0:${port}/`);
+    console.log(`[Ready] Server is live at http://0.0.0.0:${port}/`);
 
-    // Background DB initialization
+    // Background DB initialization to prevent health check timeout
     getDb().then(db => {
-      if (db) console.log("[Database] Connected successfully in background.");
-      else console.error("[Database] Failed to connect in background.");
+      if (db) console.log("[Database] Connected successfully.");
     }).catch(err => {
-      console.error("[Database] Error during background initialization:", err);
+      console.error("[Database] Initialization error:", err);
     });
   });
 }
 
 startServer().catch((err) => {
-  console.error("[Fatal] Unhandled error during server startup:", err);
+  console.error("[Fatal] Startup failed:", err);
   process.exit(1);
 });
