@@ -13,8 +13,9 @@ RUN pnpm install --no-frozen-lockfile
 COPY . .
 
 # Build frontend to dist/public and backend to dist/index.js
+# Using --packages=external to prevent esbuild from trying to bundle binary files (.node)
 RUN npx vite build --outDir dist/public && \
-    npx esbuild server/_core/index.ts --platform=node --bundle --format=esm --outfile=dist/index.js
+    npx esbuild server/_core/index.ts --platform=node --bundle --format=esm --packages=external --outfile=dist/index.js
 
 # Verification in Builder
 RUN find dist -name index.html
@@ -25,7 +26,7 @@ FROM node:24-slim
 WORKDIR /app
 
 # Copy dependency files for production
-COPY --from=builder /app/package.json /app/pnpm-lock.yaml ./
+COPY package.json pnpm-lock.yaml ./
 
 # Copy the ENTIRE dist folder
 COPY --from=builder /app/dist /app/dist
@@ -34,7 +35,7 @@ COPY --from=builder /app/dist /app/dist
 COPY --from=builder /app/server/buildings_new.csv /app/server/buildings_new.csv
 
 # Install production dependencies
-# This now includes all necessary vite-related modules in production for resilience
+# This is required because we used --packages=external
 RUN npm install -g pnpm@10.4.1 && \
     pnpm install --prod --no-frozen-lockfile && \
     npm uninstall -g pnpm
