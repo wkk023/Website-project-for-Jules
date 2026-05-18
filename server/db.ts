@@ -24,34 +24,35 @@ import { ENV } from './_core/env';
 let _db: ReturnType<typeof drizzle> | null = null;
 
 // Lazily create the drizzle instance so local tooling can run without a DB.
-// We use a simple singleton pattern. In production, make sure DATABASE_URL is set.
-export async function getDb(retryCount = 0) {
+export async function getDb() {
   if (!_db) {
     if (!process.env.DATABASE_URL) {
-      console.warn("[Database] DATABASE_URL is not set. Database operations will fail.");
+      console.warn("[Database] WARNING: DATABASE_URL is not set.");
       return null;
     }
 
     try {
       // TiDB Cloud (Serverless) requires SSL.
-      // If DATABASE_URL doesn't include ssl parameters, we add them here.
       const url = new URL(process.env.DATABASE_URL);
+
+      // If DATABASE_URL doesn't include ssl parameters, we enforce them.
       if (!url.searchParams.has("ssl")) {
-        // mysql2 driver uses "ssl" parameter. For TiDB, a simple object is enough.
+        console.log("[Database] Enforcing SSL for TiDB Cloud connection...");
         _db = drizzle({
           connection: {
             uri: process.env.DATABASE_URL,
             ssl: {
               rejectUnauthorized: true,
-            }
+            },
+            connectTimeout: 10000, // 10s timeout to prevent hanging the whole container
           }
         });
       } else {
         _db = drizzle(process.env.DATABASE_URL);
       }
-      console.log("[Database] Drizzle instance initialized with TiDB/SSL support");
+      console.log("[Database] Drizzle instance initialized.");
     } catch (error: any) {
-      console.error("[Database] Failed to initialize Drizzle:", error?.message || error);
+      console.error("[Database] Error initializing Drizzle:", error?.message || error);
       _db = null;
     }
   }
@@ -64,33 +65,45 @@ export async function getFireStationByCode(stationCode: string): Promise<FireSta
   const db = await getDb();
   if (!db) return undefined;
 
-  const result = await db
-    .select()
-    .from(fireStations)
-    .where(eq(fireStations.stationCode, stationCode))
-    .limit(1);
+  try {
+    const result = await db
+      .select()
+      .from(fireStations)
+      .where(eq(fireStations.stationCode, stationCode))
+      .limit(1);
 
-  return result.length > 0 ? result[0] : undefined;
+    return result.length > 0 ? result[0] : undefined;
+  } catch (e) {
+    console.error("[Database] Error in getFireStationByCode:", e);
+    return undefined;
+  }
 }
 
 export async function getFireStationById(id: number): Promise<FireStation | undefined> {
   const db = await getDb();
   if (!db) return undefined;
 
-  const result = await db
-    .select()
-    .from(fireStations)
-    .where(eq(fireStations.id, id))
-    .limit(1);
+  try {
+    const result = await db
+      .select()
+      .from(fireStations)
+      .where(eq(fireStations.id, id))
+      .limit(1);
 
-  return result.length > 0 ? result[0] : undefined;
+    return result.length > 0 ? result[0] : undefined;
+  } catch (e) {
+    return undefined;
+  }
 }
 
 export async function getAllFireStations(): Promise<FireStation[]> {
   const db = await getDb();
   if (!db) return [];
-
-  return await db.select().from(fireStations);
+  try {
+    return await db.select().from(fireStations);
+  } catch (e) {
+    return [];
+  }
 }
 
 // ============ Building Functions ============
@@ -98,34 +111,45 @@ export async function getAllFireStations(): Promise<FireStation[]> {
 export async function getAllBuildings(): Promise<Building[]> {
   const db = await getDb();
   if (!db) return [];
-
-  return await db.select().from(buildings);
+  try {
+    return await db.select().from(buildings);
+  } catch (e) {
+    return [];
+  }
 }
 
 export async function getBuildingById(id: number): Promise<Building | undefined> {
   const db = await getDb();
   if (!db) return undefined;
 
-  const result = await db
-    .select()
-    .from(buildings)
-    .where(eq(buildings.id, id))
-    .limit(1);
+  try {
+    const result = await db
+      .select()
+      .from(buildings)
+      .where(eq(buildings.id, id))
+      .limit(1);
 
-  return result.length > 0 ? result[0] : undefined;
+    return result.length > 0 ? result[0] : undefined;
+  } catch (e) {
+    return undefined;
+  }
 }
 
 export async function getBuildingByLifipsNumber(lifipsNumber: string): Promise<Building | undefined> {
   const db = await getDb();
   if (!db) return undefined;
 
-  const result = await db
-    .select()
-    .from(buildings)
-    .where(eq(buildings.lifipsNumber, lifipsNumber))
-    .limit(1);
+  try {
+    const result = await db
+      .select()
+      .from(buildings)
+      .where(eq(buildings.lifipsNumber, lifipsNumber))
+      .limit(1);
 
-  return result.length > 0 ? result[0] : undefined;
+    return result.length > 0 ? result[0] : undefined;
+  } catch (e) {
+    return undefined;
+  }
 }
 
 export async function searchBuildings(query: string): Promise<Building[]> {
@@ -133,17 +157,21 @@ export async function searchBuildings(query: string): Promise<Building[]> {
   if (!db) return [];
 
   const searchPattern = `%${query}%`;
-  return await db
-    .select()
-    .from(buildings)
-    .where(
-      or(
-        like(buildings.lifipsNumber, searchPattern),
-        like(buildings.address, searchPattern),
-        like(buildings.location, searchPattern)
+  try {
+    return await db
+      .select()
+      .from(buildings)
+      .where(
+        or(
+          like(buildings.lifipsNumber, searchPattern),
+          like(buildings.address, searchPattern),
+          like(buildings.location, searchPattern)
+        )
       )
-    )
-    .limit(100);
+      .limit(100);
+  } catch (e) {
+    return [];
+  }
 }
 
 // ============ Referral Department Functions ============
@@ -151,21 +179,28 @@ export async function searchBuildings(query: string): Promise<Building[]> {
 export async function getAllReferralDepartments(): Promise<ReferralDepartment[]> {
   const db = await getDb();
   if (!db) return [];
-
-  return await db.select().from(referralDepartments);
+  try {
+    return await db.select().from(referralDepartments);
+  } catch (e) {
+    return [];
+  }
 }
 
 export async function getReferralDepartmentById(id: number): Promise<ReferralDepartment | undefined> {
   const db = await getDb();
   if (!db) return undefined;
 
-  const result = await db
-    .select()
-    .from(referralDepartments)
-    .where(eq(referralDepartments.id, id))
-    .limit(1);
+  try {
+    const result = await db
+      .select()
+      .from(referralDepartments)
+      .where(eq(referralDepartments.id, id))
+      .limit(1);
 
-  return result.length > 0 ? result[0] : undefined;
+    return result.length > 0 ? result[0] : undefined;
+  } catch (e) {
+    return undefined;
+  }
 }
 
 // ============ Inspection Record Functions ============
@@ -197,10 +232,14 @@ export async function getInspectionRecordsByStation(stationId: number): Promise<
   const db = await getDb();
   if (!db) return [];
 
-  return await db
-    .select()
-    .from(inspectionRecords)
-    .where(eq(inspectionRecords.stationId, stationId));
+  try {
+    return await db
+      .select()
+      .from(inspectionRecords)
+      .where(eq(inspectionRecords.stationId, stationId));
+  } catch (e) {
+    return [];
+  }
 }
 
 export async function searchInspectionRecords(
@@ -227,17 +266,24 @@ export async function searchInspectionRecords(
     conditions.push(lte(inspectionRecords.inspectionDateTime, dateTo));
   }
 
-  return await db
-    .select()
-    .from(inspectionRecords)
-    .where(and(...conditions));
+  try {
+    return await db
+      .select()
+      .from(inspectionRecords)
+      .where(and(...conditions));
+  } catch (e) {
+    return [];
+  }
 }
 
 export async function getAllInspectionRecords(): Promise<InspectionRecord[]> {
   const db = await getDb();
   if (!db) return [];
-
-  return await db.select().from(inspectionRecords);
+  try {
+    return await db.select().from(inspectionRecords);
+  } catch (e) {
+    return [];
+  }
 }
 
 // ============ Verification Record Functions ============
@@ -269,10 +315,14 @@ export async function getVerificationRecordsByStation(stationId: number): Promis
   const db = await getDb();
   if (!db) return [];
 
-  return await db
-    .select()
-    .from(verificationRecords)
-    .where(eq(verificationRecords.verifiedByStationId, stationId));
+  try {
+    return await db
+      .select()
+      .from(verificationRecords)
+      .where(eq(verificationRecords.verifiedByStationId, stationId));
+  } catch (e) {
+    return [];
+  }
 }
 
 export async function updateVerificationRecord(
@@ -362,9 +412,12 @@ export async function getUserByOpenId(openId: string) {
     return undefined;
   }
 
-  const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
-
-  return result.length > 0 ? result[0] : undefined;
+  try {
+    const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
+    return result.length > 0 ? result[0] : undefined;
+  } catch (e) {
+    return undefined;
+  }
 }
 
 // ============ Risk Category Update Functions ============
@@ -394,10 +447,6 @@ export async function createRiskCategoryUpdate(data: InsertRiskCategoryUpdate): 
     return null;
   } catch (error: any) {
     console.error("[Database] Failed to create risk category update:", error?.message || error);
-    console.error("[Database] Data was:", JSON.stringify(data));
-    if (error?.cause) console.error("[Database] Cause:", error.cause?.message || JSON.stringify(error.cause));
-    if (error?.sqlMessage) console.error("[Database] SQL Message:", error.sqlMessage);
-    if (error?.code) console.error("[Database] Code:", error.code);
     throw error;
   }
 }
@@ -406,10 +455,14 @@ export async function getRiskCategoryUpdatesByBuilding(buildingId: string): Prom
   const db = await getDb();
   if (!db) return [];
 
-  return await db
-    .select()
-    .from(riskCategoryUpdates)
-    .where(eq(riskCategoryUpdates.buildingId, buildingId));
+  try {
+    return await db
+      .select()
+      .from(riskCategoryUpdates)
+      .where(eq(riskCategoryUpdates.buildingId, buildingId));
+  } catch (e) {
+    return [];
+  }
 }
 
 export async function updateBuildingRiskCategory(buildingId: string, newRiskCategory: string): Promise<boolean> {

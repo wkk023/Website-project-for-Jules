@@ -11,8 +11,7 @@ import { serveStatic } from "./serveStatic";
 
 async function startServer() {
   const port = parseInt(process.env.PORT || "8080");
-  const isDev = process.env.NODE_ENV === "development";
-  console.log(`Server starting in ${process.env.NODE_ENV} mode on port: ${port}`);
+  console.log(`[Startup] Initializing server on port ${port}...`);
 
   const app = express();
   const server = createServer(app);
@@ -32,8 +31,7 @@ async function startServer() {
     })
   );
 
-  if (isDev) {
-    // We use a dynamic require string to hide it from esbuild's static analysis
+  if (process.env.NODE_ENV === "development") {
     const viteModule = "./vite.js";
     // @ts-ignore
     const { setupVite } = await import(viteModule);
@@ -42,9 +40,14 @@ async function startServer() {
     serveStatic(app);
   }
 
+  // Bind to 0.0.0.0 is critical for Cloud Run health checks
   server.listen(port, "0.0.0.0", () => {
-    console.log(`Server listening at http://0.0.0.0:${port}/`);
+    console.log(`[Ready] Server is live at http://0.0.0.0:${port}/`);
   });
 }
 
-startServer().catch(console.error);
+// Ensure the process doesn't hang if DB is slow - let the server start FIRST
+startServer().catch((err) => {
+  console.error("[Fatal] Server failed to start:", err);
+  process.exit(1);
+});
