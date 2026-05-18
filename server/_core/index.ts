@@ -8,6 +8,7 @@ import { registerStorageProxy } from "./storageProxy";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic } from "./serveStatic";
+import { getDb } from "../db";
 
 async function startServer() {
   const port = parseInt(process.env.PORT || "8080");
@@ -40,14 +41,21 @@ async function startServer() {
     serveStatic(app);
   }
 
-  // Bind to 0.0.0.0 is critical for Cloud Run health checks
+  // Bind port BEFORE attempting DB connection to pass health checks
   server.listen(port, "0.0.0.0", () => {
-    console.log(`[Ready] Server is live at http://0.0.0.0:${port}/`);
+    console.log(`[Ready] Server is listening at http://0.0.0.0:${port}/`);
+
+    // Background DB initialization
+    getDb().then(db => {
+      if (db) console.log("[Database] Connected successfully in background.");
+      else console.error("[Database] Failed to connect in background.");
+    }).catch(err => {
+      console.error("[Database] Error during background initialization:", err);
+    });
   });
 }
 
-// Ensure the process doesn't hang if DB is slow - let the server start FIRST
 startServer().catch((err) => {
-  console.error("[Fatal] Server failed to start:", err);
+  console.error("[Fatal] Unhandled error during server startup:", err);
   process.exit(1);
 });
